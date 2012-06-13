@@ -59,21 +59,7 @@ if ($uri == '/') {
 	<body>
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
-			<div class="container">
-				<a class="brand" href="/"><?=$sitename?></a>
-					<!--<div class="nav-collapse">
-						<ul class="nav">
-						<?php
-						if (isset($file)):
-						?>
-							<li><a href="/">Home</a></li>
-						<?php
-						endif;
-						?>
-						</ul>
-					</div>
-					-->
-				</div>
+			<div class="container"><a class="brand" href="/"><?=$sitename?></a></div>
 			</div>
 		</div>
 		<div class="container">
