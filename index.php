@@ -57,9 +57,11 @@ if ($uri == '/') {
 		<link rel="stylesheet" href="/assets/css/bootstrap-responsive.css" />
 	</head>
 	<body>
-	<div class="navbar navbar-fixed-top">
-		<div class="navbar-inner">
-			<div class="container"><a class="brand" href="/"><?=$sitename?></a></div>
+		<div class="navbar navbar-fixed-top">
+			<div class="navbar-inner">
+				<div class="container">
+					<a class="brand" href="/"><?=$sitename?></a>
+				</div>
 			</div>
 		</div>
 		<div class="container">
