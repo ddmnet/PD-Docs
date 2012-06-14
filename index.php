@@ -1,9 +1,7 @@
 <?php
+include_once('lib/markdown.php');
 
-$directory = dirname(__FILE__) . '/docs';
-
-$filenames = array();
-$iterator = new DirectoryIterator($directory);
+$basedir = dirname(__FILE__);
 
 $uri = $_SERVER['REQUEST_URI'];
 $body = '';
@@ -14,12 +12,55 @@ $body = '';
 $sitename = "Docs";
 $copyright = "&copy; Paul DeLeeuw, " . date('Y');
 
+/**
+ * Config over.
+ */
+
+function isMarkdownFile($fileinfo) {
+	return ($fileinfo->isFile() && preg_match('/\.md$/', $fileinfo->getFilename()));
+}
+
+$activelink = false;
+
+$pagesdir = $basedir . '/pages';
+$nav = array();
+if (file_exists($pagesdir) && is_dir($pagesdir)) {
+	$iterator = new DirectoryIterator($pagesdir);
+	foreach($iterator as $fileinfo) {
+		$filename = $fileinfo->getFilename();
+		if (isMarkdownFile($fileinfo) && $filename != 'index.md') {
+			$name = explode('.', $filename);
+			array_pop($name);
+			$name = implode('.', $name);
+			$nav[] = array(
+				'name' => ucfirst($name),
+				'link' => '/' . $name
+			);
+		}
+	}
+}
+
 if ($uri == '/') {
 	$title = $sitename;
+	
+	if (file_exists($pagesdir) && is_dir($pagesdir)) {
+		$indexfile = $basedir . '/pages/index.md';
+		if (file_exists($indexfile)) {
+			$indexcontents = file_get_contents($indexfile);
+			$body .= Markdown($indexcontents);
+		}
+	}
+
+	$directory = $basedir . '/docs';
+	
+	
+	$filenames = array();
+	$iterator = new DirectoryIterator($directory);
+	
 	$body .= "<h2>Index</h2>";
 	$body .= '<ul>';
 	foreach ($iterator as $fileinfo) {
-		if ($fileinfo->isFile() && preg_match('/\.md$/', $fileinfo->getFilename())) {
+		if (isMarkdownFile($fileinfo)) {
 			$body .= '<li><a href="/view/' . $fileinfo->getFilename() . '">' . $fileinfo->getFilename() . '</a></li>';
 		}
 	}
@@ -28,15 +69,23 @@ if ($uri == '/') {
 	$uriComponents = explode('/', $uri);
 	
 	$action = $uriComponents[1];
-	$file = $uriComponents[2];
 	
-	$filename = dirname(__FILE__) . '/docs/' . $file;
+	$filename = $basedir . '/pages/' . $action . '.md';
+	
+	if (!file_exists($filename)) {
+		$file = $uriComponents[2];
+		$filename = $basedir . '/docs/' . $file;
+		$title = $sitename . ": Viewing $file";
+	} else {
+		$activelink = ucfirst($action);
+		$title = $sitename . ": " . $activelink;
+	}
 	
 	if (file_exists($filename)) {
-		include_once('lib/markdown.php');
 		$contents = file_get_contents($filename);
-		$body = Markdown($contents);
-		$title = $sitename . ": Viewing $file";
+		$body .= Markdown($contents);
+	} else {
+		'<h1>404\'d!</h1>';
 	}
 	
 }
@@ -61,6 +110,16 @@ if ($uri == '/') {
 			<div class="navbar-inner">
 				<div class="container">
 					<a class="brand" href="/"><?=$sitename?></a>
+					<div class="nav-collapse">
+						<ul class="nav">
+							<?
+							foreach ($nav as $navitem):
+								$class = ($activelink == $navitem['name']) ? ' class="active"' : '';
+								echo '<li', $class, '><a href="', $navitem['link'], '">', $navitem['name'], '</a></li>';
+							endforeach;
+							?>
+						</ul>
+					</div>
 				</div>
 			</div>
 		</div>
